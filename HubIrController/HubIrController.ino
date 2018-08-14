@@ -14,8 +14,8 @@
 // bel auth 95f47366505542158eaf88129a4241a0
 // vini auth 642b4342a8f743e699da137b65b4b69c
 char auth[] = "95f47366505542158eaf88129a4241a0";
-char ssid[] = "NodeMCU";
-char pass[] = "password";
+char ssid[] = "GVT-BFB7";
+char pass[] = "2907064093";
 
 #define IR_LED 4 //D2
 #define IR_PIN_RECEIVER 14 //D5
@@ -30,9 +30,9 @@ int pinvalue;
 bool receive_on = false;
 uint32_t trained_code;
 uint32_t code_to_send;
-uint32_t temp_air [12] = {0x8808F4B , 0x8808E4A, 0x8808D49, 0x8808C48, 0x8808B47, 0x8808A46, 
-                          0x8808945, 0x8808743, 0x8808642, 0x8808541, 0x8808440, 0x880834F};
 
+uint32_t temp_air [12] = {0x880834F, 0x8808440, 0x8808541, 0x8808642, 0x8808743, 0x8808945,
+                          0x8808A46, 0x8808B47, 0x8808C48, 0x8808D49, 0x8808E4A, 0x8808F4B};
 
 void handler_trainer(){
   while (true){
@@ -55,6 +55,9 @@ void handler_receiver(){
   }
   delay(100);
 }
+void delay_b(){
+    delay(500);
+}
 
 void send_code(uint32_t code){  
   irsend.begin();                       
@@ -63,12 +66,12 @@ void send_code(uint32_t code){
   Serial.print(" : ");
   Serial.println(code, HEX);
   irsend.sendLG(code, 32); // maybe 28
-  irsend.sendNEC(code, 32);
-  irsend.sendRC5(code, 32);
-  irsend.sendRC6(code, 32);
-  irsend.sendSony(code, 32);
-  irsend.sendPanasonic(code, 32);
+  delay_b();
   irsend.sendSAMSUNG(code , 32);
+  delay_b();
+  irsend.sendSony(code, 12, 2);
+  delay_b();
+  irsend.sendPanasonic(code, 32); 
 }
 
 BLYNK_WRITE(V2){ // liga o receiver de ir para fins de debug
@@ -88,11 +91,15 @@ BLYNK_WRITE(V3){ // ligar desligar ar e tv LG
     send_code(code_to_send);
     code_to_send = 0x880084C; //ligar ar da LG
     send_code(code_to_send);
+    code_to_send = 0xa90; // ligar Tv Sony
+    send_code(code_to_send);
     Serial.println("Turning ON");
   }else{
     code_to_send = 0x88C0051; //desligar ar Lg
     send_code(code_to_send);
     code_to_send = 0x20DF10EF;
+    send_code(code_to_send);
+    code_to_send = 0xa90; //desligar Tv Sony
     send_code(code_to_send);
     Serial.println("Turning OFF");
   }
